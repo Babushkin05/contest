@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -35,6 +36,9 @@ func getParticipants(w http.ResponseWriter, r *http.Request) {
 	for _, p := range participants {
 		list = append(list, p)
 	}
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].ID < list[j].ID
+	})
 	writeJSON(w, list)
 }
 
@@ -83,6 +87,6 @@ func main() {
 	// вернуть всех участников
 	http.HandleFunc("/leaders", getParticipants)
 
-	fmt.Println("Server running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Server running on http://localhost:1337")
+	http.ListenAndServe(":1337", nil)
 }
