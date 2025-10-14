@@ -40,7 +40,7 @@ func upHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	// статические файлы (HTML, JS, CSS)
-	fs := http.FileServer(http.Dir("static"))
+	fs := http.FileServer(http.Dir("../frontend"))
 	http.Handle("/", fs)
 
 	// API

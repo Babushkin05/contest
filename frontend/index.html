@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Бургер-битва 🍔</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
+    table { margin: auto; border-collapse: collapse; font-size: 1.5em; }
+    th, td { padding: 10px 20px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>🍔 Лидерборд поедания бургеров</h1>
+  <table id="leaderboard">
+    <thead><tr><th>Имя</th><th>Бургеры</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+  async function update() {
+    const res = await fetch("/leaders");
+    const data = await res.json();
+    data.sort((a,b) => b.count - a.count);
+    const tbody = document.querySelector("#leaderboard tbody");
+    tbody.innerHTML = data.map(p =>
+      `<tr><td>${p.name}</td><td>${p.count}</td></tr>`
+    ).join("");
+  }
+  setInterval(update, 2000);
+  update();
+  </script>
+</body>
+</html>
