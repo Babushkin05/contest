@@ -39,13 +39,12 @@ func upHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// статические файлы (HTML, JS, CSS)
-	fs := http.FileServer(http.Dir("../frontend"))
-	http.Handle("/", fs)
-
-	// API
 	http.HandleFunc("/leaders", getLeaders)
 	http.HandleFunc("/up/", upHandler)
+
+	// потом статика
+	fs := http.FileServer(http.Dir("frontend"))
+	http.Handle("/", fs)
 
 	fmt.Println("Server running on :8080")
 	http.ListenAndServe(":8080", nil)
