@@ -22,7 +22,7 @@
   <h1 class="text-3xl font-bold mb-2">🍔 Контест по поеданию бургеров</h1>
   <p id="timer" class="text-lg mb-6 text-gray-600">Ждём старта...</p>
 
-  <div class="w-full max-w-3xl">
+  <div class="w-full max-w-4xl">
     <table id="leaderboard" class="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
       <thead class="bg-gray-200 text-gray-700">
         <tr>
@@ -30,7 +30,8 @@
           <th class="py-2 px-3 text-left">Участник</th>
           <th class="py-2 px-3 text-center">🍔</th>
           <th class="py-2 px-3 text-center">⏱️ Лучшее</th>
-          <th class="py-2 px-3 text-center">Среднее</th>
+          <th class="py-2 px-3 text-center">⏱️ Среднее</th>
+          <th class="py-2 px-3 text-center">⏱️ Последний</th>
         </tr>
       </thead>
       <tbody id="leaderboard-body"></tbody>
@@ -52,6 +53,12 @@ function formatElapsed(startISO) {
   const mins = Math.floor(diff / 60000);
   const secs = Math.floor((diff % 60000) / 1000);
   return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+function formatTime(iso) {
+  if (!iso) return "–";
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 async function fetchAndUpdate() {
@@ -82,6 +89,7 @@ async function fetchAndUpdate() {
         <td class="py-2 px-3 text-center font-bold">${p.count}</td>
         <td class="py-2 px-3 text-center">${formatMs(p.best_ms)}</td>
         <td class="py-2 px-3 text-center">${formatMs(p.avg_ms)}</td>
+        <td class="py-2 px-3 text-center">${formatTime(p.last_eat)}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -92,8 +100,7 @@ async function fetchAndUpdate() {
   }
 }
 
-// Запускаем обновления каждую секунду
-setInterval(fetchAndUpdate, 100);
+setInterval(fetchAndUpdate, 1000); // достаточно 1 секунда, чтобы не перегружать сервер
 fetchAndUpdate(); // первый вызов сразу
 
   </script>
