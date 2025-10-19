@@ -2,64 +2,100 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Бургер-битва 🍔</title>
+  <title>🍔 Контест по поеданию бургеров</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .highlight {
-      animation: flash 0.5s ease;
+      background-color: #fef08a;
+      transition: background-color 2s ease;
     }
-    @keyframes flash {
-      0% { background-color: #fef3c7; }
-      100% { background-color: transparent; }
+    .rise {
+      animation: rise 0.5s ease-in-out;
+    }
+    @keyframes rise {
+      from { transform: translateY(20px); opacity: 0.6; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800">
-  <h1 class="text-4xl font-bold text-center mt-8">🍔 Лидерборд поедания бургеров</h1>
+<body class="bg-gray-100 text-gray-900 flex flex-col items-center p-4">
+  <h1 class="text-3xl font-bold mb-2">🍔 Контест по поеданию бургеров</h1>
+  <p id="timer" class="text-lg mb-6 text-gray-600">Ждём старта...</p>
 
-  <div class="overflow-x-auto mt-8">
-    <table class="mx-auto min-w-[600px] border-collapse shadow-lg bg-white">
-      <thead class="bg-yellow-300 text-gray-800 text-xl">
+  <div class="w-full max-w-3xl">
+    <table id="leaderboard" class="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
+      <thead class="bg-gray-200 text-gray-700">
         <tr>
-          <th class="px-6 py-3">Фото</th>
-          <th class="px-6 py-3">Имя</th>
-          <th class="px-6 py-3">Бургеры</th>
+          <th class="py-2 px-3 text-left">#</th>
+          <th class="py-2 px-3 text-left">Участник</th>
+          <th class="py-2 px-3 text-center">🍔</th>
+          <th class="py-2 px-3 text-center">⏱️ Лучшее</th>
+          <th class="py-2 px-3 text-center">Среднее</th>
         </tr>
       </thead>
-      <tbody id="leaderboard"></tbody>
+      <tbody id="leaderboard-body"></tbody>
     </table>
   </div>
 
   <script>
-    let oldData = {};
+let previousOrder = [];
+let contestStartISO = null;
 
-    async function update() {
-      const res = await fetch("/leaders");
-      const data = await res.json();
+function formatMs(ms) {
+  if (!ms) return "–";
+  return (ms / 1000).toFixed(1) + "s";
+}
 
-      // сортировка по count (убывание)
-      data.sort((a,b) => b.count - a.count);
+function formatElapsed(startISO) {
+  if (!startISO) return "—";
+  const diff = Date.now() - new Date(startISO).getTime();
+  const mins = Math.floor(diff / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
 
-      const tbody = document.querySelector("#leaderboard");
-      tbody.innerHTML = data.map(p => {
-        const oldCount = oldData[p.id] || 0;
-        const highlight = (p.count !== oldCount) ? "highlight" : "";
-        oldData[p.id] = p.count;
-        return `
-          <tr class="text-center ${highlight}" id="row-${p.id}">
-            <td class="px-4 py-2">
-              <img src="${p.photo}" class="w-16 h-16 rounded-full mx-auto">
-            </td>
-            <td class="px-6 py-2 text-xl font-medium">${p.name}</td>
-            <td class="px-6 py-2 text-2xl font-bold">${p.count}</td>
-          </tr>
-        `;
-      }).join("");
-    }
+async function fetchAndUpdate() {
+  try {
+    const res = await fetch("/leaders", { cache: "no-store" });
+    const data = await res.json();
+    contestStartISO = data.contest_start || contestStartISO;
 
-    // обновляем каждые 1.5 секунды
-    setInterval(update, 1500);
-    update();
+    const tbody = document.getElementById("leaderboard-body");
+    const leaders = data.leaders || [];
+
+    document.getElementById("timer").innerText =
+      contestStartISO ? "⏱ С начала: " + formatElapsed(contestStartISO) : "Ждём старта...";
+
+    tbody.innerHTML = "";
+    leaders.forEach((p, index) => {
+      const prevIndex = previousOrder.indexOf(p.id);
+      const movedUp = prevIndex > index && prevIndex !== -1;
+
+      const tr = document.createElement("tr");
+      tr.className = `border-b ${movedUp ? "rise" : ""}`;
+      const medal = ["🥇","🥈","🥉"][index] || (index+1);
+      const img = p.photo ? `<img src="${p.photo}" class="w-10 h-10 rounded-full inline mr-2">` : "";
+
+      tr.innerHTML = `
+        <td class="py-2 px-3 text-center text-lg">${medal}</td>
+        <td class="py-2 px-3 flex items-center">${img}<span>${p.name}</span></td>
+        <td class="py-2 px-3 text-center font-bold">${p.count}</td>
+        <td class="py-2 px-3 text-center">${formatMs(p.best_ms)}</td>
+        <td class="py-2 px-3 text-center">${formatMs(p.avg_ms)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    previousOrder = leaders.map(p => p.id);
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// Запускаем обновления каждую секунду
+setInterval(fetchAndUpdate, 100);
+fetchAndUpdate(); // первый вызов сразу
+
   </script>
 </body>
 </html>

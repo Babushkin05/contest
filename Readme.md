@@ -1,79 +1,144 @@
 # 🍔 Контест по поеданию бургеров
 
-**Живой лидерборд:** [http://contest.babushkin05.ru/](http://contest.babushkin05.ru/)
+[http://contest.babushkin05.ru/](http://contest.babushkin05.ru/)
+
+![alt text](./static/photos/preview.png)
+
+## Описание
+
+Простой конкурс по поеданию бургеров с лидербордом.  
+Лидеры показываются с фотографиями, количеством съеденных бургеров, лучшим временем и средним временем на бургер.  
+Также отображается общее время с начала контеста.
+
+## Участники (ID)
+
+- `vova` – Вова
+- `misha` – Миша
+- `stepa` – Стёпа
+- `egor` – Егор
+- `timur` – Тимур
+- `kp` – КатяПолина
+- `timoha` – Тимоха
+- `igor` – Игорь
+- `makar` – Макар
+
+## API
+
+### Получить список лидеров
+
+```bash
+GET /leaders
+```
+
+**Ответ:**
+
+```json
+{
+  "contest_start": "2025-10-19T12:34:56.789Z",
+  "leaders": [
+    {
+      "id": "vova",
+      "name": "Вова",
+      "count": 5,
+      "photo": "/photos/vova.jpg",
+      "best_ms": 1234,
+      "avg_ms": 2345,
+      "interval_count": 5,
+      "last_eat": "2025-10-19T12:35:01.234Z"
+    }
+  ]
+}
+```
+
+- `best_ms` – лучшее время на один бургер (мс)  
+- `avg_ms` – среднее время на бургер (мс)  
+- `interval_count` – количество интервалов (число съеденных бургеров)  
+- `last_eat` – время последнего съеденного бургера в ISO8601  
 
 ---
 
-## 🔥 API
+### Все остальные запросы защищены паролем (`PASS`) из `.env`
 
-Все запросы защищены паролем.  
-Пароль хранится в `.env` в переменной `PASS`.
+Пример: если `PASS=mysecretpass`, все запросы будут начинаться с `/mysecretpass/...`.
 
-Пример содержимого `.env`:
+
+### Запустить контест (обнулить всех)
+
+```bash
+POST /PASS/start
+```
+
+- Устанавливает текущее время как `contest_start`  
+- Обнуляет количество бургеров у всех участников  
+- Обнуляет статистику времени  
+
+---
+
+### Увеличить количество у участника на 1
+
+```bash
+POST /PASS/{id}/up
+```
+
+- `{id}` – ID участника  
+- Увеличивает `count` на 1  
+- Обновляет `last_eat`, `best_ms` и `avg_ms`  
+
+**Пример:**
+
+```bash
+curl -X POST http://contest.babushkin05.ru/mysecretpass/vova/up
+```
+
+---
+
+### Установить конкретное количество для участника
+
+```bash
+POST /PASS/{id}/{count}
+```
+
+- `{count}` – число бургеров  
+- Не меняет статистику времени  
+
+**Пример:**
+
+```bash
+curl -X POST http://contest.babushkin05.ru/mysecretpass/stepa/5
+```
+
+---
+
+## Статистика
+
+- Лидерборд сортируется по количеству съеденных бургеров  
+- Первые три участника отмечаются медалями 🥇🥈🥉  
+- Для каждого участника отображается:
+  - Фото  
+  - Количество съеденных бургеров  
+  - Лучшее время на бургер (`best_ms`)  
+  - Среднее время на бургер (`avg_ms`)  
+  - Количество интервалов (`interval_count`)  
+  - Время последнего бургера (`last_eat`)  
+
+---
+
+## Настройка
+
+1. Создать файл `.env` рядом с `main.go`:
 
 ```
 PASS=mysecretpass
 ```
 
----
-
-### ⚙️ Формат запросов
+2. Запустить сервер:
 
 ```bash
-# Увеличить счётчик участника на 1
-curl -X POST http://contest.babushkin05.ru/{pass}/{id}/up
-
-# Установить конкретное значение
-curl -X POST http://contest.babushkin05.ru/{pass}/{id}/{count}
+go run main.go
 ```
 
-Примеры:
+3. Фронтенд доступен по корню `/`:
 
-```bash
-curl -X POST http://contest.babushkin05.ru/mysecretpass/vova/up
-curl -X POST http://contest.babushkin05.ru/mysecretpass/egor/7
 ```
-
-Если пароль неверный → возвращается **404 Not Found**
-
----
-
-### 📊 Получить список лидеров
-
-```bash
-curl http://contest.babushkin05.ru/leaders
+http://contest.babushkin05.ru/
 ```
-
-Ответ в JSON:
-
-```json
-[
-  {"id": "vova", "name": "Вова", "count": 5, "photo": "/photos/vova.jpg"},
-  {"id": "misha", "name": "Миша", "count": 3, "photo": "/photos/misha.jpg"}
-]
-```
-
----
-
-## 🧍‍♂️ Список участников
-
-| ID | Имя | Фото |
-|----|-----|------|
-| `vova` | Вова | /photos/vova.jpg |
-| `misha` | Миша | /photos/misha.jpg |
-| `stepa` | Стёпа | /photos/stepa.jpg |
-| `egor` | Егор | /photos/egor.jpg |
-| `timur` | Тимур | /photos/timur.jpg |
-| `kp` | КатяПолина | /photos/kp.jpg |
-| `timoha` | Тимоха | /photos/timoha.jpg |
-| `igor` | Игорь | /photos/igor.jpg |
-| `makar` | Макар | /photos/makar.jpg |
-
----
-
-## 🧠 Примечания
-
-- Фронтенд автоматически обновляет таблицу каждые 2 секунды  
-- Для обновления счёта используйте **правильный пароль**  
-- Если API вернул `404`, проверьте пароль или ID участника  
-- Сервер работает на порту `1337` и проксируется через Nginx
