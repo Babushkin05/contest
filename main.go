@@ -18,11 +18,15 @@ type Participant struct {
 
 // фиксированные участники
 var participants = map[string]*Participant{
-	"vova":  {ID: "vova", Name: "Вова", Count: 0, Photo: "/photos/vova.jpg"},
-	"misha": {ID: "misha", Name: "Миша", Count: 0, Photo: "/photos/misha.jpg"},
-	"stepa": {ID: "stepa", Name: "Степа", Count: 0, Photo: "/photos/stepa.jpg"},
-	"egor":  {ID: "egor", Name: "Егор", Count: 0, Photo: "/photos/egor.jpg"},
-	"timur": {ID: "timur", Name: "Тимур", Count: 0, Photo: "/photos/timur.jpg"},
+	"vova":   {ID: "vova", Name: "Вова", Count: 0, Photo: "/photos/vova.jpg"},
+	"misha":  {ID: "misha", Name: "Миша", Count: 0, Photo: "/photos/misha.jpg"},
+	"stepa":  {ID: "stepa", Name: "Степа", Count: 0, Photo: "/photos/stepa.jpg"},
+	"egor":   {ID: "egor", Name: "Егор", Count: 0, Photo: "/photos/egor.jpg"},
+	"timur":  {ID: "timur", Name: "Тимур", Count: 0, Photo: "/photos/timur.jpg"},
+	"kp":     {ID: "kp", Name: "КатяПолина", Count: 0, Photo: "/photos/kp.jpg"},
+	"timoha": {ID: "timoha", Name: "Тимоха", Count: 0, Photo: "/photos/timoha.jpg"},
+	"igor":   {ID: "igor", Name: "Игорь", Count: 0, Photo: "/photos/igor.jpg"},
+	"makar":  {ID: "makar", Name: "Макар", Count: 0, Photo: "/photos/makar.jpg"},
 }
 
 func writeJSON(w http.ResponseWriter, data any) {
